@@ -1,0 +1,172 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Quiz Ähnlichkeit und Strahlensätze</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Itim&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: eine Frage pro Bildschirm, Zettel-Karte auf Heftpapier-Grund, Rückmeldung sofort */
+:root{
+  --bg:#f4f5f6; --paper:#ffffff; --note:#fff8d6; --ink:#222222; --muted:#5a5f66;
+  --line:#333333; --grid:#d3d7dc; --accent:#2f6fb7; --accent-ink:#ffffff;
+  --good:#1f7a3d; --good-bg:#e2f4e7; --bad:#b3261e; --bad-bg:#fbe7e5;
+  --display:'Itim',sans-serif; --body:'Nunito',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#16191d; --paper:#1f2328; --note:#3a3520; --ink:#eceef0; --muted:#a3a9b0;
+  --line:#8c939b; --grid:#2e343a; --accent:#7db3ee; --accent-ink:#0f1a28;
+  --good:#7fd69a; --good-bg:#183324; --bad:#ff9a92; --bad-bg:#3a1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16191d; --paper:#1f2328; --note:#3a3520; --ink:#eceef0; --muted:#a3a9b0;
+  --line:#8c939b; --grid:#2e343a; --accent:#7db3ee; --accent-ink:#0f1a28;
+  --good:#7fd69a; --good-bg:#183324; --bad:#ff9a92; --bad-bg:#3a1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-direction:column;gap:8px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(24px,5vw,32px);line-height:1.2;margin:0;text-wrap:balance}
+.bar{height:10px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.card{position:relative;background:var(--note);border:1.5px solid var(--line);padding:20px 18px 18px;display:flex;flex-direction:column;gap:16px}
+.card::before{content:"";position:absolute;left:50%;top:-9px;width:56px;height:16px;margin-left:-28px;background:rgba(160,160,160,.55);border:1px solid var(--line);transform:rotate(-2deg)}
+.part{font-family:var(--display);font-size:15px;color:var(--muted);text-decoration:underline}
+.q{font-size:clamp(18px,3.6vw,21px);font-weight:700;margin:0;text-wrap:pretty}
+.fig{align-self:center;background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:6px 10px;max-width:100%}
+.fig svg{display:block;width:100%;max-width:300px;height:auto}
+.fig small{display:block;text-align:center;color:var(--muted);font-size:12px}
+.fl{stroke:var(--ink);stroke-width:1.8;fill:none}.fp{stroke:var(--accent);stroke-width:1.6;fill:none}.fd{fill:var(--ink)}
+.ft{fill:var(--ink);font:italic 13px 'Times New Roman',serif}.fa{fill:var(--accent);font:italic 13px 'Times New Roman',serif}
+.opts{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:12px 14px;cursor:pointer;min-height:48px}
+.opt:hover:not(:disabled){border-color:var(--accent);outline:1.5px solid var(--accent)}
+.opt .l{font-family:var(--display);font-size:18px;min-width:22px}
+.opt:disabled{cursor:default}
+.opt.good{background:var(--good-bg);border-color:var(--good);color:var(--ink)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad)}
+.opt.dim{opacity:.6}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.fb{border:1.5px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--paper)}
+.fb strong{font-family:var(--display);font-weight:400;font-size:18px}
+.fb.good strong{color:var(--good)} .fb.bad strong{color:var(--bad)}
+.fb p{margin:4px 0 0;color:var(--ink)}
+.btn{font:inherit;font-weight:700;background:var(--accent);color:var(--accent-ink);border:1.5px solid var(--line);border-radius:6px;padding:12px 18px;cursor:pointer;align-self:flex-start;min-height:48px}
+.btn:hover{filter:brightness(1.08)}
+.score{font-family:var(--display);font-size:clamp(40px,10vw,64px);line-height:1;margin:0}
+.review{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.review li{background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:10px 14px}
+.review b{color:var(--bad)}
+.review small{display:block;color:var(--muted)}
+.muted{color:var(--muted);margin:0}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="top"><span>Klasse 9 · Ähnlichkeit und Strahlensätze</span><span id="counter" aria-live="polite"></span></div>
+    <h1>Quiz Ähnlichkeit und Strahlensätze</h1>
+    <div class="bar" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="20" id="pb"><i id="fill"></i></div>
+  </header>
+
+  <main id="quiz" class="card">
+    <div class="part" id="part"></div>
+    <p class="q" id="q"></p>
+    <div class="fig" id="fig" hidden></div>
+    <ul class="opts" id="opts"></ul>
+    <div class="fb" id="fb" hidden aria-live="polite"><strong id="fbt"></strong><p id="fbx"></p></div>
+    <button class="btn" id="next" hidden>Weiter</button>
+  </main>
+
+  <section id="result" class="card" hidden>
+    <div class="part">Ergebnis</div>
+    <p class="score" id="score"></p>
+    <p class="q" id="msg"></p>
+    <div id="rvw" hidden>
+      <p class="muted" style="margin-bottom:10px">Das solltest du noch einmal ansehen:</p>
+      <ul class="review" id="rl"></ul>
+    </div>
+    <button class="btn" id="again">Noch einmal versuchen</button>
+  </section>
+</div>
+
+<script>
+const PARTS=["Teil 1: Ähnlichkeit und Streckung","Teil 2: Strahlensätze","Teil 3: Längen, Flächen, Volumina"];
+const Q=[
+{p:0,q:"Welche Aussage über ähnliche Figuren ist richtig?",o:["Alle Seiten sind gleich lang.","Der Flächeninhalt ist gleich.","Entsprechende Winkel sind gleich groß, die Seitenverhältnisse sind gleich.","Die Figuren sind immer deckungsgleich."],a:2,e:"Ähnliche Figuren haben gleiche Winkel und gleiche Seitenverhältnisse. Sie dürfen unterschiedlich groß sein."},
+{p:0,q:"Eine Strecke von 8 cm wird mit k = 1,5 gestreckt. Wie lang ist das Bild?",o:["12 cm","9,5 cm","6 cm","5,3 cm"],a:0,e:"8 cm · 1,5 = 12 cm."},
+{p:0,q:"Was bewirkt eine zentrische Streckung mit 0 < k < 1?",o:["Eine Vergrößerung","Eine Spiegelung","Eine Verschiebung","Eine Verkleinerung"],a:3,e:"Ist k kleiner als 1, wird die Figur verkleinert."},
+{p:0,q:"Z ist das Streckzentrum, k = 3. Wo liegt der Bildpunkt P′ von P?",o:["Auf dem Strahl ZP mit |ZP′| = |ZP| + 3","Auf dem Strahl ZP mit |ZP′| = 3 · |ZP|","Auf dem Gegenstrahl von ZP","Auf der Parallelen zu ZP durch Z"],a:1,e:"P′ liegt auf dem Strahl von Z durch P, und die Länge wird mit k multipliziert."},
+{p:0,q:"Ein Dreieck mit den Seiten 3 cm, 4 cm und 5 cm wird mit k = 2 gestreckt. Neue Seiten?",o:["5 cm, 6 cm, 7 cm","6 cm, 8 cm, 7 cm","6 cm, 8 cm, 10 cm","1,5 cm, 2 cm, 2,5 cm"],a:2,e:"Jede Seite mal 2: 6 cm, 8 cm, 10 cm."},
+{p:0,q:"Original 6 cm, Bild 4 cm. Wie groß ist der Streckfaktor k?",o:["2/3","1,5","2","24"],a:0,e:"k = Bild : Original = 4 : 6 = 2/3."},
+{p:0,q:"Zwei Geraden durch Z werden von zwei Parallelen geschnitten, Z liegt zwischen den Parallelen. Welche Figur ist das?",o:["V-Figur","Z-Figur","T-Figur","X-Figur"],a:3,e:"Liegt Z zwischen den Parallelen, entsteht die X-Figur."},
+{p:1,f:"V",q:"Welche Gleichung folgt aus dem 1. Strahlensatz? (g ∥ h, A, C und B, D auf den Strahlen)",o:["|ZA| / |ZC| = |AB| / |ZD|","|ZA| / |ZC| = |ZB| / |ZD|","|ZA| / |ZB| = |ZD| / |ZC|","|ZA| / |AB| = |ZC| / |ZD|"],a:1,e:"Der 1. Strahlensatz vergleicht Strecken, die von Z ausgehen: |ZA| / |ZC| = |ZB| / |ZD|."},
+{p:1,f:"V",q:"Welche Gleichung folgt aus dem 2. Strahlensatz?",o:["|ZB| / |ZD| = |CD| / |AB|","|ZB| / |AB| = |ZD| / |ZC|","|ZB| / |ZD| = |AB| / |CD|","|AB| / |ZB| = |ZD| / |CD|"],a:2,e:"Der 2. Strahlensatz vergleicht Strahlenabschnitte ab Z mit den Parallelenabschnitten: |ZB| / |ZD| = |AB| / |CD|."},
+{p:1,q:"Löse nach x auf: 4 / x = 6 / 9",o:["x = 6","x = 2,67","x = 13,5","x = 24"],a:0,e:"Überkreuz: 4 · 9 = 6 · x, also 36 = 6x und x = 6."},
+{p:1,f:"V",q:"g ∥ h. |ZA| = 3 cm, |ZB| = 4 cm, |ZC| = 9 cm. Wie lang ist |ZD|?",o:["6 cm","7 cm","13,5 cm","12 cm"],a:3,e:"3 / 9 = 4 / |ZD|, also |ZD| = 4 · 9 / 3 = 12 cm."},
+{p:1,f:"V",q:"g ∥ h. |ZA| = 5 cm, |ZC| = 8 cm, |CD| = 12 cm. Wie lang ist |AB|?",o:["19,2 cm","7,5 cm","4,8 cm","3 cm"],a:1,e:"2. Strahlensatz: 5 / 8 = |AB| / 12, also |AB| = 5 · 12 / 8 = 7,5 cm."},
+{p:1,f:"X",q:"X-Figur mit g ∥ h. |ZA| = 6 cm, |ZD| = 15 cm, |ZB| = 4 cm. Wie lang ist |ZC|?",o:["10 cm","1,6 cm","9 cm","22,5 cm"],a:0,e:"|ZA| / |ZD| = |ZB| / |ZC|, also 6 / 15 = 4 / |ZC| und |ZC| = 10 cm."},
+{p:1,q:"Ein 2 m langer Stab wirft einen 3 m langen Schatten. Der Mast daneben hat einen 15 m langen Schatten. Wie hoch ist der Mast?",o:["7,5 m","22,5 m","10 m","12 m"],a:2,e:"2 / 3 = h / 15, also h = 2 · 15 / 3 = 10 m."},
+{p:1,q:"Es gilt x / (x + 6) = 2 / 5. Wie groß ist x?",o:["x = 2","x = 6","x = 8","x = 4"],a:3,e:"5x = 2 · (x + 6) = 2x + 12, also 3x = 12 und x = 4."},
+{p:2,q:"Ein Dreieck hat A = 5 cm². Es wird mit k = 4 vergrößert. Wie groß ist der neue Flächeninhalt?",o:["20 cm²","80 cm²","40 cm²","320 cm²"],a:1,e:"Flächen wachsen mit k²: 5 cm² · 16 = 80 cm²."},
+{p:2,q:"Ein Quader hat V = 10 cm³. Er wird mit k = 3 vergrößert. Wie groß ist das neue Volumen?",o:["270 cm³","30 cm³","90 cm³","100 cm³"],a:0,e:"Volumina wachsen mit k³: 10 cm³ · 27 = 270 cm³."},
+{p:2,q:"Das Volumen eines Körpers wird 27-mal so groß. Welchen Streckfaktor hat die Vergrößerung?",o:["k = 9","k = 27","k = 3","k = 13,5"],a:2,e:"k³ = 27, also k = 3."},
+{p:2,q:"Ein Modell im Maßstab 1 : 50 ist 12 cm hoch. Wie hoch ist das Original?",o:["60 m","0,6 m","24 m","6 m"],a:3,e:"12 cm · 50 = 600 cm = 6 m."},
+{p:2,q:"Ein Modellauto (Maßstab 1 : 10) hat 0,2 m² Lackfläche. Wie groß ist die Lackfläche des echten Autos?",o:["2 m²","20 m²","200 m²","0,02 m²"],a:1,e:"Flächen wachsen mit k² = 100: 0,2 m² · 100 = 20 m²."}
+];
+const FIG={
+V:'<svg viewBox="0 0 330 170" role="img" aria-label="V-Figur: zwei Strahlen von Z, geschnitten von den Parallelen g und h"><line class="fp" x1="68" y1="65" x2="140" y2="133"/><line class="fp" x1="175" y1="6" x2="300" y2="139"/><line class="fl" x1="24" y1="128" x2="190" y2="22"/><line class="fl" x1="24" y1="128" x2="290" y2="128"/><circle class="fd" cx="24" cy="128" r="3"/><circle class="fd" cx="90" cy="86" r="3"/><circle class="fd" cx="134" cy="128" r="3"/><circle class="fd" cx="190" cy="22" r="3"/><circle class="fd" cx="290" cy="128" r="3"/><text class="ft" x="12" y="148" style="font-weight:700">Z</text><text class="ft" x="84" y="82" text-anchor="end">A</text><text class="ft" x="126" y="148" text-anchor="middle">B</text><text class="ft" x="196" y="19">C</text><text class="ft" x="284" y="148" text-anchor="middle">D</text><text class="fa" x="64" y="61" text-anchor="end">g</text><text class="fa" x="170" y="10" text-anchor="end">h</text></svg><small>Skizze, nicht maßstabsgetreu</small>',
+X:'<svg viewBox="0 0 330 182" role="img" aria-label="X-Figur: Z liegt zwischen den Parallelen g und h"><line class="fp" x1="88" y1="21" x2="236" y2="21"/><line class="fp" x1="10" y1="166" x2="262" y2="166"/><line class="fl" x1="119" y1="21" x2="228" y2="166"/><line class="fl" x1="197" y1="21" x2="33" y2="166"/><circle class="fd" cx="150" cy="62" r="3"/><circle class="fd" cx="119" cy="21" r="3"/><circle class="fd" cx="197" cy="21" r="3"/><circle class="fd" cx="33" cy="166" r="3"/><circle class="fd" cx="228" cy="166" r="3"/><text class="ft" x="138" y="66" text-anchor="end" style="font-weight:700">Z</text><text class="ft" x="113" y="18" text-anchor="end">A</text><text class="ft" x="203" y="18">B</text><text class="ft" x="26" y="178" text-anchor="end">C</text><text class="ft" x="234" y="178">D</text><text class="fa" x="240" y="25">g</text><text class="fa" x="266" y="170">h</text></svg><small>Skizze, nicht maßstabsgetreu</small>'
+};
+const L=["A","B","C","D"];
+const $=id=>document.getElementById(id);
+let i=0,score=0,wrong=[],locked=false;
+
+function show(){
+  const t=Q[i]; locked=false;
+  $("counter").textContent="Frage "+(i+1)+" von "+Q.length;
+  $("fill").style.width=(i/Q.length*100)+"%"; $("pb").setAttribute("aria-valuenow",i);
+  $("part").textContent=PARTS[t.p]; $("q").textContent=t.q;
+  const fg=$("fig"); fg.hidden=!t.f; fg.innerHTML=t.f?FIG[t.f]:"";
+  const ul=$("opts"); ul.innerHTML="";
+  t.o.forEach((txt,k)=>{
+    const li=document.createElement("li"), b=document.createElement("button");
+    b.type="button"; b.className="opt"; b.id="opt"+k;
+    b.innerHTML='<span class="l">'+L[k]+')</span><span></span>'; b.lastChild.textContent=txt;
+    b.addEventListener("click",()=>pick(k)); li.appendChild(b); ul.appendChild(li);
+  });
+  $("fb").hidden=true; $("next").hidden=true;
+}
+function pick(k){
+  if(locked) return; locked=true;
+  const t=Q[i], ok=k===t.a;
+  if(ok) score++; else wrong.push({n:i+1,q:t.q,mine:t.o[k],right:t.o[t.a]});
+  [...document.querySelectorAll(".opt")].forEach((b,j)=>{
+    b.disabled=true;
+    if(j===t.a) b.classList.add("good"); else if(j===k) b.classList.add("bad"); else b.classList.add("dim");
+  });
+  const fb=$("fb"); fb.hidden=false; fb.className="fb "+(ok?"good":"bad");
+  $("fbt").textContent=ok?"Richtig!":"Leider falsch. Richtig ist "+L[t.a]+".";
+  $("fbx").textContent=t.e;
+  const n=$("next"); n.hidden=false; n.textContent=i===Q.length-1?"Ergebnis ansehen":"Weiter"; n.focus();
+}
+function finish(){
+  $("quiz").hidden=true; $("result").hidden=false;
+  $("fill").style.width="100%"; $("pb").setAttribute("aria-valuenow",Q.length);
+  $("counter").textContent="Fertig";
+  $("score").textContent=score+" / "+Q.length;
+  const p=score/Q.length;
+  $("msg").textContent=p===1?"Perfekt! Alle Fragen richtig.":p>=.8?"Sehr gut! Nur wenige Fehler.":p>=.6?"Gut. Schau dir die Fehler noch einmal an.":p>=.4?"Das geht noch besser. Wiederhole das Basiswissen und probiere es noch einmal.":"Lies das Basiswissen noch einmal und übe mit den Stationen.";
+  const rl=$("rl"); rl.innerHTML="";
+  wrong.forEach(w=>{const li=document.createElement("li");
+    li.innerHTML="<b></b> <span></span><small></small>";
+    li.querySelector("b").textContent="Frage "+w.n+":"; li.querySelector("span").textContent=w.q;
+    li.querySelector("small").textContent="Deine Antwort: "+w.mine+" · Richtig: "+w.right; rl.appendChild(li);});
+  $("rvw").hidden=!wrong.length;
+  $("again").focus();
+}
+$("next").addEventListener("click",()=>{ if(i===Q.length-1) finish(); else {i++; show();} });
+$("again").addEventListener("click",()=>{ i=0;score=0;wrong=[]; $("result").hidden=true; $("quiz").hidden=false; show(); });
+show();
+</script>
+
+</body></html>
